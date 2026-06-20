@@ -47,6 +47,59 @@ differently.
 - Not a competitor to ChatGPT/Claude-as-a-coach. It's a narrow, opinionated
   pipeline that gives one specific kind of output well.
 
+## Architecture
+
+![Reels Analyzer architecture: Member sets up IG handle, competitors, and business context. A background pipeline runs Apify scrape → faster-whisper transcribe → Claude Sonnet analyze, writing to reels_cache, reels_transcripts, and reels_reports. The report viewer renders the markdown output.](docs/architecture.svg)
+
+**A single report run, end-to-end:**
+
+| Step | Tool | What it does | Where it lands | Cache |
+|------|------|--------------|----------------|-------|
+| 1 | **Apify** ([instagram-reel-scraper](https://apify.com/apify/instagram-reel-scraper)) | Pulls latest reels per handle: caption, view/like/comment counts, video & audio URLs | `reels_cache` | 24h per handle |
+| 2 | **faster-whisper** (base model, int8 CPU) | Downloads each top reel's audio, transcribes the spoken words verbatim | `reels_transcripts` | Permanent (keyed by shortcode) |
+| 3 | **Claude Sonnet 4.6** (via Anthropic API) | Reads business context + member reels + competitor reels with transcripts, writes a one-page markdown report ending in 5 ready-to-shoot scripts | `reels_reports` | — |
+| 4 | **Claude-aesthetic HTML** (built-in) | Optional: renders setup form, dashboard, and report viewer for host apps | — | — |
+
+The pipeline runs as a **background thread** spawned by `start_report_async()`,
+so the HTTP request that triggers it returns immediately. The report row
+flips through `pending → running → done|failed`, with `status_detail`
+updated at each phase ("scraping 2 handles via apify", "transcribing reels
+via whisper", "asking claude to synthesize"). The Claude-aesthetic report
+viewer auto-refreshes every 6 seconds while the run is in flight.
+
+### Why each tool
+
+**Why Apify (not [yt-dlp](https://github.com/yt-dlp/yt-dlp) / [instaloader](https://github.com/instaloader/instaloader)).**
+Instagram aggressively blocks anonymous scraping in 2025+ — `403 Forbidden`
+on the GraphQL endpoint, even for public profiles. Free tools require a
+logged-in session cookie (your real account gets flagged) or a throwaway
+account (bans within weeks). Apify maintains a hardened actor with rotating
+residential proxies and absorbs the ban risk on their side. Pricing is
+~$0.01-0.03 per profile scrape — negligible at a handful of handles per
+member per week.
+
+**Why faster-whisper (not the OpenAI Whisper API).**
+Free, local, no API key, no audio data leaving the box. The `base` model is
+~140MB, runs at int8 quantization on CPU, and processes ~3-5× realtime on
+a 4-core machine — so a 60-second reel transcribes in ~15 seconds. Quality
+is plenty for hook extraction (we're not transcribing legal depositions).
+First call lazy-loads the model into memory (~1 GB resident); subsequent
+runs in the same process reuse it.
+
+**Why Claude Sonnet (not GPT-4 / smaller models).**
+Quality matters more than cost on the analyze step — a mediocre report
+makes the whole pipeline pointless. Sonnet follows complex system prompts
+faithfully (the 5-script-with-HOOK/BODY/CTA structure), is honest about
+ambiguity ("the data here is too thin to tell"), and won't slop out
+generic creator advice. About $0.05-0.10 per report at typical sizes
+(~15k input + 2k output tokens).
+
+**Why MySQL (not SQLite / Postgres / a vector store).**
+Boringly available everywhere; the host app probably already has one. No
+vector search needed because Claude reads the full context per run — we're
+not retrieving similar past reports, we're regenerating fresh each time.
+The schema is five flat tables, in `migrations/001_init.sql`.
+
 ## Stack
 
 - **Python 3.10+**

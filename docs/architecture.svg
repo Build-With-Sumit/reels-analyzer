@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 660" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FAF9F5"/>
+      <stop offset="1" stop-color="#F2EFE6"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#1F1E1B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#C7714B"/>
+    </marker>
+    <marker id="arrowMuted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#9C9785"/>
+    </marker>
+  </defs>
+
+  <!-- background -->
+  <rect width="1180" height="660" fill="url(#bg)"/>
+
+  <!-- header -->
+  <text x="60" y="56" font-size="28" font-weight="600" fill="#1F1E1B" letter-spacing="-0.5">reels-analyzer · architecture</text>
+  <text x="60" y="84" font-size="14" fill="#76746E">From a member's setup to a markdown report with 5 ready-to-shoot reel scripts.</text>
+
+  <!-- swimlane labels -->
+  <text x="60" y="138" font-size="11" font-weight="700" fill="#C7714B" letter-spacing="2">SETUP · ONE-TIME</text>
+  <text x="60" y="304" font-size="11" font-weight="700" fill="#C7714B" letter-spacing="2">RUN · BACKGROUND THREAD PER REPORT</text>
+  <text x="60" y="570" font-size="11" font-weight="700" fill="#C7714B" letter-spacing="2">READ</text>
+
+  <!-- ============ SETUP ROW ============ -->
+
+  <!-- Member -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="150" width="170" height="76" rx="8" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <circle cx="98" cy="188" r="16" fill="#F6E9DF" stroke="#C7714B" stroke-width="1.5"/>
+    <circle cx="98" cy="183" r="5" fill="#C7714B"/>
+    <path d="M86,200 q12,-9 24,0" stroke="#C7714B" stroke-width="2" fill="none"/>
+    <text x="128" y="186" font-size="14" font-weight="600" fill="#1F1E1B">Member</text>
+    <text x="128" y="204" font-size="11" fill="#76746E">opens /members/reels</text>
+  </g>
+
+  <!-- arrow to setup form -->
+  <line x1="230" y1="188" x2="290" y2="188" stroke="#9C9785" stroke-width="1.5" marker-end="url(#arrowMuted)"/>
+  <text x="260" y="178" font-size="10" fill="#76746E" text-anchor="middle">opens</text>
+
+  <!-- Setup form -->
+  <g filter="url(#shadow)">
+    <rect x="290" y="150" width="240" height="76" rx="8" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <text x="310" y="178" font-size="14" font-weight="600" fill="#1F1E1B">Setup form</text>
+    <text x="310" y="198" font-size="11" fill="#76746E">IG handle · competitors</text>
+    <text x="310" y="212" font-size="11" fill="#76746E">business context</text>
+  </g>
+
+  <!-- arrow to DBs -->
+  <line x1="530" y1="188" x2="590" y2="188" stroke="#9C9785" stroke-width="1.5" marker-end="url(#arrowMuted)"/>
+  <text x="560" y="178" font-size="10" fill="#76746E" text-anchor="middle">upsert</text>
+
+  <!-- Setup storage (two cylinders) -->
+  <g filter="url(#shadow)">
+    <!-- profiles cylinder -->
+    <ellipse cx="635" cy="160" rx="42" ry="8" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <rect x="593" y="160" width="84" height="44" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <ellipse cx="635" cy="204" rx="42" ry="8" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <line x1="593" y1="160" x2="593" y2="204" stroke="#E8E4D9"/>
+    <line x1="677" y1="160" x2="677" y2="204" stroke="#E8E4D9"/>
+    <text x="635" y="186" font-size="11" font-weight="600" fill="#1F1E1B" text-anchor="middle">reels_</text>
+    <text x="635" y="200" font-size="11" font-weight="600" fill="#1F1E1B" text-anchor="middle">profiles</text>
+
+    <!-- handles cylinder -->
+    <ellipse cx="745" cy="160" rx="42" ry="8" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <rect x="703" y="160" width="84" height="44" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <ellipse cx="745" cy="204" rx="42" ry="8" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <line x1="703" y1="160" x2="703" y2="204" stroke="#E8E4D9"/>
+    <line x1="787" y1="160" x2="787" y2="204" stroke="#E8E4D9"/>
+    <text x="745" y="186" font-size="11" font-weight="600" fill="#1F1E1B" text-anchor="middle">reels_</text>
+    <text x="745" y="200" font-size="11" font-weight="600" fill="#1F1E1B" text-anchor="middle">handles</text>
+  </g>
+
+  <!-- "click Run" arrow from member down into pipeline -->
+  <path d="M145 226 L145 326" stroke="#C7714B" stroke-width="2" fill="none" marker-end="url(#arrowOrange)"/>
+  <text x="155" y="280" font-size="11" fill="#C7714B" font-weight="500">clicks</text>
+  <text x="155" y="294" font-size="11" fill="#C7714B" font-weight="500">"Run analysis"</text>
+
+  <!-- ============ PIPELINE ROW ============ -->
+
+  <!-- pipeline container -->
+  <rect x="60" y="320" width="1060" height="180" rx="10" fill="#FFF8F2" stroke="#F0DCC8"/>
+
+  <!-- 1. Apify -->
+  <g filter="url(#shadow)">
+    <rect x="100" y="356" width="200" height="108" rx="8" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <circle cx="124" cy="376" r="11" fill="#C7714B"/>
+    <text x="124" y="380" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
+    <text x="146" y="382" font-size="14" font-weight="600" fill="#1F1E1B">Apify</text>
+    <text x="146" y="400" font-size="11" fill="#76746E">instagram-reel-scraper</text>
+    <line x1="116" y1="412" x2="284" y2="412" stroke="#E8E4D9"/>
+    <text x="116" y="430" font-size="10" fill="#76746E">caption, view/like/comment</text>
+    <text x="116" y="446" font-size="10" fill="#76746E">video_url, audio_url</text>
+    <text x="116" y="460" font-size="10" fill="#9C9785" font-style="italic">cached 24h</text>
+  </g>
+
+  <!-- arrow 1 -> 2 -->
+  <line x1="300" y1="410" x2="380" y2="410" stroke="#C7714B" stroke-width="2" marker-end="url(#arrowOrange)"/>
+
+  <!-- 2. Whisper -->
+  <g filter="url(#shadow)">
+    <rect x="380" y="356" width="200" height="108" rx="8" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <circle cx="404" cy="376" r="11" fill="#C7714B"/>
+    <text x="404" y="380" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
+    <text x="426" y="382" font-size="14" font-weight="600" fill="#1F1E1B">faster-whisper</text>
+    <text x="426" y="400" font-size="11" fill="#76746E">base · int8 · local CPU</text>
+    <line x1="396" y1="412" x2="564" y2="412" stroke="#E8E4D9"/>
+    <text x="396" y="430" font-size="10" fill="#76746E">downloads each audio_url</text>
+    <text x="396" y="446" font-size="10" fill="#76746E">returns verbatim transcript</text>
+    <text x="396" y="460" font-size="10" fill="#9C9785" font-style="italic">cached forever</text>
+  </g>
+
+  <!-- arrow 2 -> 3 -->
+  <line x1="580" y1="410" x2="660" y2="410" stroke="#C7714B" stroke-width="2" marker-end="url(#arrowOrange)"/>
+
+  <!-- 3. Claude -->
+  <g filter="url(#shadow)">
+    <rect x="660" y="356" width="200" height="108" rx="8" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <circle cx="684" cy="376" r="11" fill="#C7714B"/>
+    <text x="684" y="380" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
+    <text x="706" y="382" font-size="14" font-weight="600" fill="#1F1E1B">Claude Sonnet</text>
+    <text x="706" y="400" font-size="11" fill="#76746E">via Anthropic API</text>
+    <line x1="676" y1="412" x2="844" y2="412" stroke="#E8E4D9"/>
+    <text x="676" y="430" font-size="10" fill="#76746E">prompt = context + reels</text>
+    <text x="676" y="446" font-size="10" fill="#76746E">+ transcripts + view counts</text>
+    <text x="676" y="460" font-size="10" fill="#9C9785" font-style="italic">~$0.05-0.10 / report</text>
+  </g>
+
+  <!-- arrow 3 -> 4 (report) -->
+  <line x1="860" y1="410" x2="940" y2="410" stroke="#C7714B" stroke-width="2" marker-end="url(#arrowOrange)"/>
+
+  <!-- 4. Report -->
+  <g filter="url(#shadow)">
+    <rect x="940" y="356" width="160" height="108" rx="8" fill="#FFFFFF" stroke="#C7714B" stroke-width="1.5"/>
+    <circle cx="964" cy="376" r="11" fill="#C7714B"/>
+    <text x="964" y="380" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">4</text>
+    <text x="986" y="382" font-size="14" font-weight="600" fill="#1F1E1B">Markdown</text>
+    <text x="986" y="400" font-size="11" fill="#76746E">report</text>
+    <line x1="956" y1="412" x2="1084" y2="412" stroke="#E8E4D9"/>
+    <text x="956" y="430" font-size="10" fill="#76746E">one-page analysis</text>
+    <text x="956" y="446" font-size="10" fill="#76746E">+ 5 ready-to-shoot</text>
+    <text x="956" y="460" font-size="10" fill="#76746E">reel scripts</text>
+  </g>
+
+  <!-- storage cylinders below the pipeline -->
+  <g filter="url(#shadow)">
+    <ellipse cx="200" cy="492" rx="50" ry="7" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <rect x="150" y="492" width="100" height="20" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <ellipse cx="200" cy="512" rx="50" ry="7" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <line x1="150" y1="492" x2="150" y2="512" stroke="#E8E4D9"/>
+    <line x1="250" y1="492" x2="250" y2="512" stroke="#E8E4D9"/>
+    <text x="200" y="508" font-size="10" font-weight="600" fill="#1F1E1B" text-anchor="middle">reels_cache</text>
+  </g>
+  <line x1="200" y1="464" x2="200" y2="485" stroke="#9C9785" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrowMuted)"/>
+
+  <g filter="url(#shadow)">
+    <ellipse cx="480" cy="492" rx="60" ry="7" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <rect x="420" y="492" width="120" height="20" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <ellipse cx="480" cy="512" rx="60" ry="7" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <line x1="420" y1="492" x2="420" y2="512" stroke="#E8E4D9"/>
+    <line x1="540" y1="492" x2="540" y2="512" stroke="#E8E4D9"/>
+    <text x="480" y="508" font-size="10" font-weight="600" fill="#1F1E1B" text-anchor="middle">reels_transcripts</text>
+  </g>
+  <line x1="480" y1="464" x2="480" y2="485" stroke="#9C9785" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrowMuted)"/>
+
+  <g filter="url(#shadow)">
+    <ellipse cx="1020" cy="492" rx="55" ry="7" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <rect x="965" y="492" width="110" height="20" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <ellipse cx="1020" cy="512" rx="55" ry="7" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <line x1="965" y1="492" x2="965" y2="512" stroke="#E8E4D9"/>
+    <line x1="1075" y1="492" x2="1075" y2="512" stroke="#E8E4D9"/>
+    <text x="1020" y="508" font-size="10" font-weight="600" fill="#1F1E1B" text-anchor="middle">reels_reports</text>
+  </g>
+  <line x1="1020" y1="464" x2="1020" y2="485" stroke="#9C9785" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrowMuted)"/>
+
+  <!-- ============ READ ROW ============ -->
+
+  <!-- arrow from reels_reports down to Report viewer -->
+  <path d="M1020 519 L1020 580 L660 580 L660 600" stroke="#9C9785" stroke-width="1.5" fill="none" marker-end="url(#arrowMuted)"/>
+
+  <!-- Report viewer -->
+  <g filter="url(#shadow)">
+    <rect x="560" y="600" width="280" height="42" rx="8" fill="#FFFFFF" stroke="#E8E4D9"/>
+    <text x="580" y="618" font-size="13" font-weight="600" fill="#1F1E1B">Report viewer</text>
+    <text x="580" y="634" font-size="10" fill="#76746E">/members/reels/report?id=N · auto-refresh while pending</text>
+  </g>
+
+  <!-- footer caption -->
+  <text x="60" y="650" font-size="10" fill="#9C9785">Member, setup form &amp; report viewer ship in reels_analyzer.html · pipeline + DB ship in reels_analyzer.core</text>
+</svg>
