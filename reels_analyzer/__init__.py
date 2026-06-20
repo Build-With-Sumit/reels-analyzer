@@ -16,7 +16,7 @@ APIFY_API_TOKEN, ANTHROPIC_API_KEY). If a host app exposes a MySQL `config`
 table with the same key names, those values take precedence — see core.cfg().
 """
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 from .core import (
     # config

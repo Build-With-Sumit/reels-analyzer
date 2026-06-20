@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reels-analyzer"
-version = "0.2.0"
+version = "0.2.1"
 description = "Scrape competitors' Instagram reels, transcribe with Whisper, analyze with Claude — return concrete reel scripts to shoot next. Auto-derives your business context from your website."
 readme = "README.md"
 license = "AGPL-3.0-or-later"

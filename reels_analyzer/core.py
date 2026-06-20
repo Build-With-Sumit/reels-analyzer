@@ -188,8 +188,8 @@ def upsert_reel(handle, item):
 
 def get_handle_reels(handle, top_n=15):
     return db_read(
-        "SELECT shortcode,caption,posted_at,duration_sec,view_count,like_count,"
-        "comment_count,audio_url FROM reels_cache WHERE ig_handle=%s "
+        "SELECT shortcode,ig_handle,caption,posted_at,duration_sec,view_count,"
+        "like_count,comment_count,audio_url FROM reels_cache WHERE ig_handle=%s "
         "ORDER BY view_count DESC LIMIT %s",
         (handle.lower(), top_n)) or []
 
@@ -265,8 +265,9 @@ def _fmt_reel_block(label, reels_with_transcripts, limit=8):
     for r in reels_with_transcripts[:limit]:
         cap = (r.get("caption") or "").replace("\n", " ").strip()[:240]
         tr = (r.get("transcript") or "").strip()
+        handle = r.get("ig_handle") or "?"
         out.append(
-            f"- @{r['ig_handle']} | {r.get('view_count', 0):>9,}v "
+            f"- @{handle} | {r.get('view_count', 0):>9,}v "
             f"{r.get('like_count', 0):>6,}l {r.get('comment_count', 0):>5,}c | "
             f"{int(r.get('duration_sec') or 0)}s\n"
             f"  caption: {cap or '(none)'}\n"
@@ -286,7 +287,7 @@ def build_report_prompt(profile, member_reels, competitor_reels):
             member_reels, limit=8),
         "",
         _fmt_reel_block(
-            f"Competitors' top reels (across {len(set(r['ig_handle'] for r in competitor_reels))} handles)",
+            f"Competitors' top reels (across {len({r.get('ig_handle') for r in competitor_reels if r.get('ig_handle')})} handles)",
             competitor_reels, limit=15),
         "",
         "Produce the report now. Markdown only. Lead with the single biggest gap.",
