@@ -202,44 +202,55 @@ def setup_html(email, profile=None, handles=None, message="", action="/members/r
     profile = profile or {}
     handles = handles or []
     ig = _esc(profile.get("ig_handle") or "")
-    ctx = _esc(profile.get("business_context") or "")
-    selfs = "\n".join(h["ig_handle"] for h in handles if h["kind"] == "self")
+    web = _esc(profile.get("website_url") or "")
+    ctx = (profile.get("business_context") or "").strip()
     comps = "\n".join(h["ig_handle"] for h in handles if h["kind"] == "competitor")
     note = f'<p class="form-error">{_esc(message)}</p>' if message else ""
     is_edit = bool(profile)
+
+    derived = ""
+    if is_edit and ctx:
+        derived = (
+            '<div class="panel" style="background:var(--surface-sunken);border-color:var(--border)">'
+            '<p class="muted small" style="margin:0 0 .4rem;font-weight:600">'
+            'Business context Claude derived from your website:</p>'
+            f'<p style="margin:0;font-size:.95rem;color:var(--text-soft)">{_esc(ctx)}</p>'
+            '</div>'
+        )
+
     body = (
         f'<a class="back-link" href="{back_url}">&larr; Members area</a>'
         '<span class="eyebrow">Reels Analyzer</span>'
-        f'<h1>{"Edit your radar" if is_edit else "Set up your radar"}</h1>'
+        f'<h1>{"Edit your project" if is_edit else "Create your project"}</h1>'
         '<p class="lead">'
-        'Drop in your Instagram handle, a short note about your business, and the '
-        'competitor accounts you want to study. Each report scrapes their reels, '
-        'transcribes the audio verbatim, and returns 5 reel scripts you can shoot '
-        'this week.'
+        'Tell us your handle and website — Claude will read the site to figure out '
+        'what your business does. Then drop in up to 5 competitor accounts. Each '
+        "analysis returns 5 reel scripts in your voice that you can shoot this week."
         '</p>'
         f'<form method="POST" action="{action}" class="panel">'
         '<label>Your Instagram handle'
         f'<input type="text" name="ig_handle" required placeholder="yourname" value="{ig}">'
         '</label>'
-        "<label>What does your business do? Who's the buyer?"
-        '<textarea name="business_context" required rows="4" '
-        'placeholder="e.g. We sell EmpMonitor — workforce monitoring software for SMBs '
-        '(10-200 employees). Buyers are operations managers / IT leads who want to '
-        'track productivity without micro-managing.">'
-        f'{ctx}</textarea></label>'
-        '<label>Competitor IG handles (one per line, up to 5)'
+        '<label>Your website'
+        '<input type="text" name="website_url" required '
+        'placeholder="https://yourcompany.com" '
+        f'value="{web}">'
+        '</label>'
+        '<label>Competitor Instagram handles (one per line, up to 5)'
         '<textarea name="competitors" required rows="5" '
         'placeholder="lukebuildsai&#10;gregisenberg&#10;wowxmanish">'
         f'{_esc(comps)}</textarea></label>'
-        '<label>Other handles to track as your own (optional)'
-        '<textarea name="self_aliases" rows="2" '
-        'placeholder="(blank if just your main account)">'
-        f'{_esc(selfs)}</textarea></label>'
         '<button class="btn btn-primary btn-lg" type="submit">'
-        f'{"Save changes" if is_edit else "Save and continue"}</button>'
+        f'{"Save changes" if is_edit else "Create project"}</button>'
         f'{note}</form>'
+        f'{derived}'
+        '<p class="muted small" style="margin-top:1rem">'
+        f'{"Saving" if is_edit else "Setting up your project"} takes ~15 seconds '
+        'while we fetch and summarize your website.</p>'
     )
-    return _shell("Reels Analyzer · Setup", body, home_url=back_url)
+    return _shell(
+        "Reels Analyzer · " + ("Edit project" if is_edit else "Create project"),
+        body, home_url=back_url)
 
 
 def dashboard_html(email, profile, handles, reports,
@@ -273,18 +284,35 @@ def dashboard_html(email, profile, handles, reports,
         'first run takes 3-8 minutes (scrape + transcribe + analyze).</p>'
     )
 
+    project_name = profile.get("ig_handle") or "your project"
+    website = profile.get("website_url") or ""
+    website_html = (f'<p style="margin:.4rem 0"><span class="muted small">Website</span><br>'
+                    f'<a href="{_esc(website)}" target="_blank" rel="noopener">{_esc(website)}</a></p>'
+                    if website else "")
+    ctx = (profile.get("business_context") or "").strip()
+    ctx_html = ""
+    if ctx:
+        ctx_html = (
+            '<details style="margin-top:.8rem">'
+            '<summary class="muted small" style="cursor:pointer;font-weight:600">Business context Claude derived from your website</summary>'
+            f'<p style="margin:.6rem 0 0;font-size:.92rem;color:var(--text-soft);line-height:1.55">{_esc(ctx)}</p>'
+            '</details>'
+        )
+
     body = (
         f'<a class="back-link" href="{back_url}">&larr; Members area</a>'
-        '<span class="eyebrow">Reels Analyzer</span>'
-        '<h1>Your competitor radar</h1>'
+        '<span class="eyebrow">Reels Analyzer · Project</span>'
+        f'<h1>@{_esc(project_name)}</h1>'
         '<p class="lead">'
         "Read what's working in your niche, get 5 reel scripts to shoot next."
         '</p>'
         '<div class="panel">'
-        '<h3>Tracking</h3>'
-        f'<p style="margin:.4rem 0"><span class="muted small">Your handles</span><br>{self_chips}</p>'
+        '<h3>Project setup</h3>'
+        f'<p style="margin:.4rem 0"><span class="muted small">Your Instagram</span><br>{self_chips}</p>'
+        f'{website_html}'
         f'<p style="margin:.4rem 0 .8rem"><span class="muted small">Competitors</span><br>{comp_chips}</p>'
-        f'<a class="btn" href="{setup_url}">Edit list</a>'
+        f'<a class="btn" href="{setup_url}">Edit project</a>'
+        f'{ctx_html}'
         '</div>'
         '<div class="panel accent">'
         '<h3>Generate a fresh report</h3>'
@@ -299,7 +327,7 @@ def dashboard_html(email, profile, handles, reports,
         '<h2 style="margin-bottom:1rem">Past reports</h2>'
         f'{rows_html}'
     )
-    return _shell("Reels Analyzer · Dashboard", body, home_url=back_url)
+    return _shell("Reels Analyzer · Project", body, home_url=back_url)
 
 
 _MD_SCRIPT = (

@@ -10,22 +10,25 @@ Open source under [AGPL-3.0](LICENSE). The managed version lives inside
 
 You give it:
 - your Instagram handle,
-- a one-paragraph description of your business and your buyer,
+- **your website URL** (we read it for you — no need to write a business pitch),
 - 1-5 competitor handles you want to study.
 
-It runs a four-stage pipeline:
+It runs a five-stage pipeline:
 
-1. **Scrape** — pulls the latest reels from each handle via [Apify's Instagram
+1. **Read your site** — fetches your homepage, strips the HTML, and asks
+   **Claude** to write a one-paragraph business-context (what you sell, who
+   the buyer is, your angle). Stored once per project.
+2. **Scrape** — pulls the latest reels from each handle via [Apify's Instagram
    Reel Scraper actor](https://apify.com/apify/instagram-reel-scraper) (caption,
    view/like/comment counts, video & audio URLs).
-2. **Transcribe** — downloads the audio of each top reel and runs
+3. **Transcribe** — downloads the audio of each top reel and runs
    [faster-whisper](https://github.com/SYSTRAN/faster-whisper) locally to get
    verbatim spoken text. Captions only tell you what was written; transcripts
    give you the *actual hook* the creator used in the first 3 seconds.
-3. **Analyze** — feeds everything (your business context + your reels + each
+4. **Analyze** — feeds everything (your business context + your reels + each
    competitor's top reels with transcripts and view counts) to **Claude
    Sonnet** with a system prompt designed to be brutally specific.
-4. **Output** — a one-page markdown report ending with **exactly 5 numbered
+5. **Output** — a one-page markdown report ending with **exactly 5 numbered
    reel scripts** you can shoot this week, each with a verbatim hook, 3-5
    sentence body, and a CTA in your voice.
 
@@ -51,13 +54,14 @@ differently.
 
 ![Reels Analyzer architecture: Member sets up IG handle, competitors, and business context. A background pipeline runs Apify scrape → faster-whisper transcribe → Claude Sonnet analyze, writing to reels_cache, reels_transcripts, and reels_reports. The report viewer renders the markdown output.](docs/architecture.svg)
 
-**A single report run, end-to-end:**
+**The pipeline, end-to-end:**
 
 | Step | Tool | What it does | Where it lands | Cache |
 |------|------|--------------|----------------|-------|
+| **Setup** | **Claude Sonnet** (via Anthropic API) | Reads your website (HTML-stripped) and writes a one-paragraph business context: what you sell, who the buyer is, your angle | `reels_profiles.business_context` | Per project |
 | 1 | **Apify** ([instagram-reel-scraper](https://apify.com/apify/instagram-reel-scraper)) | Pulls latest reels per handle: caption, view/like/comment counts, video & audio URLs | `reels_cache` | 24h per handle |
 | 2 | **faster-whisper** (base model, int8 CPU) | Downloads each top reel's audio, transcribes the spoken words verbatim | `reels_transcripts` | Permanent (keyed by shortcode) |
-| 3 | **Claude Sonnet 4.6** (via Anthropic API) | Reads business context + member reels + competitor reels with transcripts, writes a one-page markdown report ending in 5 ready-to-shoot scripts | `reels_reports` | — |
+| 3 | **Claude Sonnet** (via Anthropic API) | Reads business context + member reels + competitor reels with transcripts, writes a one-page markdown report ending in 5 ready-to-shoot scripts | `reels_reports` | — |
 | 4 | **Claude-aesthetic HTML** (built-in) | Optional: renders setup form, dashboard, and report viewer for host apps | — | — |
 
 The pipeline runs as a **background thread** spawned by `start_report_async()`,
@@ -139,10 +143,11 @@ winget install Gyan.FFmpeg
 
 ## Setup
 
-1. Create the schema in your MySQL database:
+1. Create the schema in your MySQL database (apply each migration in order):
 
    ```bash
    mysql -u<user> -p<pw> <dbname> < migrations/001_init.sql
+   mysql -u<user> -p<pw> <dbname> < migrations/002_website_url.sql
    ```
 
 2. Set environment variables (or put them in a `config` MySQL table — same
@@ -165,21 +170,21 @@ import reels_analyzer as ra
 
 email = "founder@acme.com"
 
-# 1) Save the member's profile and tracked handles
+# 1) Auto-derive business context from the member's website (~10-15s)
+business_context = ra.summarize_website("https://acme.com")
+
+# 2) Save the project (profile + tracked handles)
 ra.upsert_profile(
     email,
     ig_handle="acmefounder",
-    business_context=(
-        "We sell EmpMonitor — workforce monitoring software for SMBs "
-        "(10-200 employees). Buyers are ops managers / IT leads who want "
-        "to track productivity without micro-managing."
-    ),
+    business_context=business_context,
+    website_url="https://acme.com",
 )
 ra.set_handles(email,
     self_handles=["acmefounder"],
     competitor_handles=["lukebuildsai", "gregisenberg", "wowxmanish"])
 
-# 2) Kick off a background report run
+# 3) Kick off a background report run
 report_id = ra.start_report_async(email)
 
 # 3) Poll until done

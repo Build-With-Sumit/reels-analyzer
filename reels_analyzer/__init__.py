@@ -16,7 +16,7 @@ APIFY_API_TOKEN, ANTHROPIC_API_KEY). If a host app exposes a MySQL `config`
 table with the same key names, those values take precedence — see core.cfg().
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from .core import (
     # config
@@ -26,6 +26,8 @@ from .core import (
     # scrape / transcribe / analyze primitives
     apify_scrape, transcribe_audio_url, call_claude,
     build_report_prompt, REPORT_SYSTEM, CLAUDE_MODEL,
+    # website -> business-context summarization
+    fetch_url_text, summarize_website, SUMMARIZE_SYSTEM,
     # storage
     upsert_reel, get_handle_reels, get_transcript, save_transcript,
     cache_fresh,
@@ -42,6 +44,7 @@ __all__ = [
     "db_read", "db_write", "db_insert",
     "apify_scrape", "transcribe_audio_url", "call_claude",
     "build_report_prompt", "REPORT_SYSTEM", "CLAUDE_MODEL",
+    "fetch_url_text", "summarize_website", "SUMMARIZE_SYSTEM",
     "upsert_reel", "get_handle_reels", "get_transcript", "save_transcript",
     "cache_fresh",
     "get_profile", "upsert_profile", "list_handles", "set_handles",

@@ -397,13 +397,81 @@ def get_profile(email):
     return rows[0] if rows else None
 
 
-def upsert_profile(email, ig_handle, business_context):
+def upsert_profile(email, ig_handle, business_context, website_url=None):
     db_write(
-        "INSERT INTO reels_profiles (email, ig_handle, business_context) "
-        "VALUES (%s, %s, %s) "
+        "INSERT INTO reels_profiles (email, ig_handle, business_context, website_url) "
+        "VALUES (%s, %s, %s, %s) "
         "ON DUPLICATE KEY UPDATE ig_handle=VALUES(ig_handle), "
-        "business_context=VALUES(business_context)",
-        (email, ig_handle.lower().lstrip("@"), business_context))
+        "business_context=VALUES(business_context), website_url=VALUES(website_url)",
+        (email, ig_handle.lower().lstrip("@"), business_context, website_url))
+
+
+def fetch_url_text(url, max_bytes=80_000, timeout=15):
+    """Fetch a URL and return its visible plain-text content, capped.
+
+    Strips script/style/noscript blocks. Robust to bad encoding declarations
+    (falls back to latin-1) and arbitrary content-types (best effort decode).
+    """
+    from html.parser import HTMLParser
+
+    class _Strip(HTMLParser):
+        def __init__(self):
+            super().__init__(convert_charrefs=True)
+            self.parts = []
+            self._skip = 0
+        def handle_starttag(self, tag, attrs):
+            if tag in ("script", "style", "noscript", "svg"):
+                self._skip += 1
+        def handle_endtag(self, tag):
+            if tag in ("script", "style", "noscript", "svg"):
+                self._skip = max(0, self._skip - 1)
+        def handle_data(self, data):
+            if not self._skip:
+                t = data.strip()
+                if t:
+                    self.parts.append(t)
+
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (compatible; reels-analyzer/0.2; +https://github.com/Build-With-Sumit/reels-analyzer)",
+        "Accept": "text/html,*/*",
+    })
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        raw = resp.read(max_bytes)
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        text = raw.decode("utf-8", errors="replace")
+    parser = _Strip()
+    try:
+        parser.feed(text)
+    except Exception:
+        pass
+    return " ".join(parser.parts)
+
+
+SUMMARIZE_SYSTEM = """You are summarizing a business for use as context in a \
+content-strategy tool. The output goes into another AI's system prompt to \
+recommend Instagram reel scripts. Be concrete: what does this company sell, \
+who is the buyer, what's the unique angle. One paragraph, ~120-180 words. \
+Voice: direct, founder-honest, no marketing fluff. No greetings, no \
+disclaimers — start with the substance."""
+
+
+def summarize_website(url):
+    """Fetch a website and ask Claude to summarize the business + buyer.
+
+    Returns the summary string. Raises on fetch failure or thin content.
+    """
+    if not url or not url.lower().startswith(("http://", "https://")):
+        raise ValueError("URL must start with http:// or https://")
+    text = fetch_url_text(url)
+    if len(text) < 80:
+        raise RuntimeError(
+            f"Site returned too little content to summarize ({len(text)} chars). "
+            "Add a richer page or set business context manually.")
+    user = f"Website URL: {url}\n\nHomepage content (HTML stripped):\n\n{text[:50000]}"
+    summary, _usage = call_claude(SUMMARIZE_SYSTEM, user, max_tokens=400)
+    return summary.strip()
 
 
 def list_handles(email):
