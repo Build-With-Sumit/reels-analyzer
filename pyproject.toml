@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reels-analyzer"
+version = "0.1.0"
+description = "Scrape competitors' Instagram reels, transcribe with Whisper, analyze with Claude — return concrete reel scripts to shoot next."
+readme = "README.md"
+license = "AGPL-3.0-or-later"
+requires-python = ">=3.10"
+authors = [
+    { name = "Sumit Ghosh", email = "sumit@globussoft.com" },
+]
+keywords = [
+    "instagram", "reels", "scraping", "ai", "claude", "whisper",
+    "content-marketing", "creator-tools", "competitor-analysis",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Multimedia :: Video",
+]
+dependencies = [
+    "faster-whisper>=1.0",
+    "pymysql>=1.0",
+]
+
+[project.urls]
+Homepage = "https://buildwithsumit.com"
+Repository = "https://github.com/Build-With-Sumit/reels-analyzer"
+Issues = "https://github.com/Build-With-Sumit/reels-analyzer/issues"
+"Managed version" = "https://buildwithsumit.com/community.html"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["reels_analyzer*"]
